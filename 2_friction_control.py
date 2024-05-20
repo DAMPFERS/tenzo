@@ -6,7 +6,7 @@ import time
 import sys
 import os
 
-from hx711 import HX711
+from hx711_v2 import HX711
 
 ROOT_DIR = "/home/vladr/Downloads"
 START_MOTOR_PIN = 12
@@ -304,7 +304,7 @@ def main():
 
 def simple_test():
     import RPi.GPIO as GPIO  # import GPIO
-    from hx711 import HX711  # import the class HX711
+    from hx711_v2 import HX711  # import the class HX711
     GPIO.setmode(GPIO.BCM)  # set GPIO pin mode to BCM numbering
     hx = HX711(dout_pin=21, pd_sck_pin=20)  # create an object
     while(1): print(hx.get_raw_data_mean(readings=1))  # get raw data reading from hx711
