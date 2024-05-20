@@ -1,14 +1,7 @@
 import statistics as stat
 import time
-
 import RPi.GPIO as GPIO
 
-def init(dt, sck):
-    GPIO.setmode(GPIO.BCM)
-    GPIO.setup(sck, GPIO.OUT)  # pin _pd_sck is output only
-    GPIO.setup(dt, GPIO.IN)  # pin _dout is input only
-
-    time.sleep(0.5)
 
 
 def ready(dt):
