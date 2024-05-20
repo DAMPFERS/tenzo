@@ -45,38 +45,7 @@ def inputParameters(weight : int, velocity : int) -> tuple:
     return (f_object, cycles, cycles_time, filedir)
 
 
-def contactGpioSettingsV1() -> tuple:
-    '''CONTACT GPIO SETTINGS'''
-    #RELAY
-    
-    
-    
-    GPIO.setmode(GPIO.BCM)
-    GPIO.setup(START_MOTOR_PIN, GPIO.OUT)
 
-    #SENSORS
-    #FORMAT _(DT, SCK)
-    hx_left = HX711(LEFT_SENSOR[0], LEFT_SENSOR[0])
-    hx_center = HX711(RIGHT_SENSOR[0], RIGHT_SENSOR[1])
-    hx_right = HX711(RIGHT_SENSOR[0], RIGHT_SENSOR[1])
-
-    hx_left.set_reading_format("LSB", "MSB")
-    hx_center.set_reading_format("LSB", "MSB")
-    hx_right.set_reading_format("LSB", "MSB")
-
-    #CALIBRATION COEFFICIENTS FOR SENSORS
-    hx_left.set_reference_unit(34.5)
-    hx_center.set_reference_unit(46)
-    hx_right.set_reference_unit(36)
-
-    hx_left.reset()
-    hx_center.reset()
-    hx_right.reset()
-    hx_left.tare()
-    hx_center.tare()
-    hx_right.tare()
-
-    return (hx_left, hx_center, hx_right)
 
 
 def contactGpioSettingsV2() -> tuple:
@@ -185,26 +154,7 @@ def frictionProgramV2(weight, velocity, f_object, cycles, cycles_time, filedir, 
 
 
 
-def frictionProgramV3( hx_left, hx_center, hx_right) -> bool:
-    '''FRICTION PROGRAM'''
-    
-    #GPIO.output(START_MOTOR_PIN, GPIO.HIGH)
-	
-    i = 0
-    while i <= 100:
-        
-            val_left = hx_left.get_raw_data_mean(readings=1)     #Read not filter
-            val_center = hx_center.get_raw_data_mean(readings=1) #Read not filter
-            val_right = hx_right.get_raw_data_mean(readings=1)   #Read not filter
-            #val_center = 0
-            #val_right = 0
-            #print(f"{val_left},  {val_center},  {val_right}")
-            print(val_left)
-            i += 1                    
-            
 
-    cleanAndExit()
-    return True
 
 
 
@@ -235,46 +185,7 @@ def saveResult_CSV(file_addr, save_time, sensor_left, sensor_center, sensor_righ
 
 
 
-def frictionProgramV4():
-    
-	
-    
-    
-    GPIO.setmode(GPIO.BCM)
-    dt = 21
-    sck = 20
-    GPIO.setup(sck, GPIO.OUT, initial=False)
-    GPIO.setup(dt, GPIO.IN)
-    for a in range(25):
-        res = 0
-        i = 0
-        ready_counter = 0 
-        while not GPIO.input(dt):
-            pass
-            #time.sleep(0.01)  # sleep for 10 ms because data is not ready
-            #ready_counter += 1
-            #if ready_counter == 40:
-                #return None
-            #print(GPIO.input(dt))
-        while i < 25:
-            GPIO.output(sck, True)
-            time.sleep(0.000011)
-            GPIO.output(sck, False)
-            time.sleep(0.000011)
-            if i < 24: 
-                res = (res << 1) | GPIO.input(dt)
-            i += 1
-        signed_data = 0
-            # 0b1000 0000 0000 0000 0000 0000 check if the sign bit is 1. Negative number.
-        if (res & 0x800000):
-            signed_data = -(
-                (res ^ 0xffffff) + 1)  # convert from 2's complement to int
-        else:  # else do not do anything the value is positive number
-            signed_data = res
-        print(signed_data)
-    GPIO.cleanup()
-    return
-    #print("0_o")'''
+
 	
 
 
@@ -315,7 +226,7 @@ def simple_test():
     
 
 if __name__ == "__main__":
-    #main()
-    simple_test() 
+    main()
+    #simple_test() 
     #frictionProgramV4()  
     
