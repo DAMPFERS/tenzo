@@ -48,20 +48,22 @@ def inputParameters(weight : int, velocity : int) -> tuple:
 
 
 
+
+	
+
 def contactGpioSettingsV3():
-    '''CONTACT GPIO SETTINGS'''
-    GPIO.setwarnings(False)
-    GPIO.cleanup()
-    GPIO.setmode(GPIO.BCM)  # set GPIO pin mode to BCM numbering
-    GPIO.setup(START_MOTOR_PIN, GPIO.OUT, initial=GPIO.LOW)
+	pass
+	GPIO.setwarnings(False)
+	GPIO.cleanup()
+	GPIO.setmode(GPIO.BCM)
 	GPIO.setup(DT_LEFT_SENSOR, GPIO.IN)
 	GPIO.setup(DT_RIGHT_SENSOR, GPIO.IN)
 	GPIO.setup(DT_CENTER_SENSOR, GPIO.IN)
 	GPIO.setup(SCK, GPIO.OUT)
+	GPIO.setup(START_MOTOR_PIN, GPIO.OUT, initial=GPIO.LOW)
 	time.sleep(0.3)
-	return
-
-      
+	
+	
   
   
 def ready(dt: int) -> bool:
@@ -145,9 +147,9 @@ def frictionProgramV3(weight: int, velocity: int, f_object: str, cycles: int, cy
 
     measure_time = 0
     m_time = 0
-    while measure_time <= cycles_time:
+    while (measure_time <= cycles_time) :
         try:
-			val_left, val_center, val_right = read3(DT_LEFT_SENSOR, DT_RIGHT_SENSOR, DT_CENTER_SENSOR, SCK)
+            val_left, val_center, val_right = read3(DT_LEFT_SENSOR, DT_RIGHT_SENSOR, DT_CENTER_SENSOR, SCK)
             measure_time = time.time() - start_time
 
             save_time.append(measure_time)
@@ -159,11 +161,11 @@ def frictionProgramV3(weight: int, velocity: int, f_object: str, cycles: int, cy
         except (KeyboardInterrupt, SystemExit):
             print ('End of the program')
             GPIO.output(START_MOTOR_PIN, GPIO.LOW)
-            ile_txt = filedir + f'/{cycles}rev.txt'
-			file_csv = filedir + f'/{cycles}rev.csv'
-    
-			saveResult_TXT(file_txt, save_time, sensor_left, sensor_center, sensor_right, friction_coefficient)
-			saveResult_CSV(file_csv, save_time, sensor_left, sensor_center, sensor_right, friction_coefficient)
+            file_txt = filedir + f"/{cycles}rev.txt"
+            file_csv = filedir + f"/{cycles}rev.csv"
+
+            saveResult_TXT(file_txt, save_time, sensor_left, sensor_center, sensor_right)
+            saveResult_CSV(file_csv, save_time, sensor_left, sensor_center, sensor_right)
             cleanAndExit()
             return False
     
@@ -173,8 +175,8 @@ def frictionProgramV3(weight: int, velocity: int, f_object: str, cycles: int, cy
     file_txt = filedir + f'/{cycles}rev.txt'
     file_csv = filedir + f'/{cycles}rev.csv'
     
-    saveResult_TXT(file_txt, save_time, sensor_left, sensor_center, sensor_right, friction_coefficient)
-    saveResult_CSV(file_csv, save_time, sensor_left, sensor_center, sensor_right, friction_coefficient)
+    saveResult_TXT(file_txt, save_time, sensor_left, sensor_center, sensor_right)
+    saveResult_CSV(file_csv, save_time, sensor_left, sensor_center, sensor_right)
 
     print (f'''
     End of the program
@@ -210,15 +212,14 @@ def saveResult_TXT(file_addr: str, save_time: float, sensor_left: int, sensor_ce
 
 
 def saveResult_CSV(file_addr: str, save_time: float, sensor_left: int, sensor_center: int, sensor_right: int) -> bool:
-	'''
+    '''
     Saving result to a csv file
 	parametr file_addr: filename addres 
 	parametr save_time: time
 	parametr sensor_left: left ADC underestimation
 	parametr sensor_center: center ADC underestimation
 	parametr sensor_right: right ADC underestimation
-	return: True if successful
-	'''
+	return: True if successful '''
     import csv
     with open(file_addr, 'w', encoding='utf-8', newline='') as f:
         writer = csv.writer(f, delimiter=',')
@@ -238,10 +239,10 @@ def saveResult_CSV(file_addr: str, save_time: float, sensor_left: int, sensor_ce
 def main():
     f_object, cycles, cycles_time, filedir = inputParameters(weight= WEIGHT, velocity= VELOCITY)
     contactGpioSettingsV3()
-    while(1):
-		res = frictionProgramV3(WEIGHT, VELOCITY, f_object, cycles, cycles_time, filedir, hx_left)
-		if res == False: break
-    
+    while True:
+        res = frictionProgramV3(WEIGHT, VELOCITY, f_object, cycles, cycles_time, filedir)
+        if res == False: break
+    return    
     
     
     
