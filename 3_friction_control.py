@@ -64,11 +64,11 @@ def contactGpioSettingsV3():
       
   
   
-def ready(dt) -> bool:
+def ready(dt: int) -> bool:
         """
-        _ready method check if data is prepared for reading from HX711
-
-        Returns: bool True if ready else False when not ready        
+        func check if data is prepared for reading from HX711
+		parametr dt: number data pin raspberry pi4
+        return: bool True if ready else False when not ready        
         """
         # if DOUT pin is low data is ready for reading
         if GPIO.input(dt) == 0:
@@ -77,12 +77,15 @@ def ready(dt) -> bool:
             return False
 
 
-def read3(dt1, dt2, dt3, sck) -> tuple[int]:
+
+
+def read3(dt1: int, dt2: int, dt3: int, sck: int) -> tuple[int]:
         """
         _read method reads bits from hx711, converts to INT
         and validate the data.
-        
-        Returns: (bool || int) if it returns False then it is false reading.
+        parametrs dt1, dt2, dt3: number data pins raspberry pi4
+        parametr sck: number clocked pin raspberry pi4
+        return: (bool || int) if it returns False then it is false reading.
             if it returns int then the reading was correct
         """
         GPIO.output(sck, False)  # start by setting the pd_sck to 0
@@ -121,7 +124,7 @@ def read3(dt1, dt2, dt3, sck) -> tuple[int]:
         return (data_in1, data_in2, data_in3) 
     
 
-def frictionProgramV3(weight, velocity, f_object, cycles, cycles_time, filedir) -> bool:
+def frictionProgramV3(weight: int, velocity: int, f_object: str, cycles: int, cycles_time: float, filedir: str) -> bool:
     '''FRICTION PROGRAM'''
     save_time = []
     sensor_left = []
@@ -135,7 +138,7 @@ def frictionProgramV3(weight, velocity, f_object, cycles, cycles_time, filedir) 
     {cycles} cycles
     {weight} g 
 
-    TIME       L      C      R    FC''')
+    TIME       L      C      R ''')
 
     start_time = time.time()
     GPIO.output(START_MOTOR_PIN, GPIO.HIGH)
@@ -186,7 +189,16 @@ def frictionProgramV3(weight, velocity, f_object, cycles, cycles_time, filedir) 
 
 
 
-def saveResult_TXT(file_addr, save_time, sensor_left, sensor_center, sensor_right):
+def saveResult_TXT(file_addr: str, save_time: float, sensor_left: int, sensor_center: int, sensor_right: int) -> bool:
+    '''
+    Saving result to a txt file
+	parametr file_addr: filename addres 
+	parametr save_time: time
+	parametr sensor_left: left ADC underestimation
+	parametr sensor_center: center ADC underestimation
+	parametr sensor_right: right ADC underestimation
+	return: True if successful
+	'''
     with open(file_addr, 'w', encoding='utf-8') as f:
         data = "time  leftSens  centerSens  rightSens "
         f.write(data)
@@ -197,14 +209,23 @@ def saveResult_TXT(file_addr, save_time, sensor_left, sensor_center, sensor_righ
 
 
 
-def saveResult_CSV(file_addr, save_time, sensor_left, sensor_center, sensor_right):
+def saveResult_CSV(file_addr: str, save_time: float, sensor_left: int, sensor_center: int, sensor_right: int) -> bool:
+	'''
+    Saving result to a csv file
+	parametr file_addr: filename addres 
+	parametr save_time: time
+	parametr sensor_left: left ADC underestimation
+	parametr sensor_center: center ADC underestimation
+	parametr sensor_right: right ADC underestimation
+	return: True if successful
+	'''
     import csv
     with open(file_addr, 'w', encoding='utf-8', newline='') as f:
         writer = csv.writer(f, delimiter=',')
         writer.writerow(["save_time", "sensor_left", "sensor_center", "sensor_right"])
         for i in range(len(save_time)):
             writer.writerow([save_time[i], sensor_left[i], sensor_center[i], sensor_right[i]])
-    return
+    return True
 
 
 
