@@ -1,0 +1,4 @@
+Vin = 4.38
+COM13
+
+pyinstaller -F -i "путь к иконке" main.py
