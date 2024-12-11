@@ -49,8 +49,10 @@ void setup_io() {
     gpio = (volatile unsigned *)gpio_map;
 }
 
-
-
+SensorsData readSensors(uint32_t clk, uint32_t dt1, uint32_t dt2, uint32_t dt3){
+    return 0;
+}
+/*
 int main() {
     int pin = 17;  // Номер GPIO пина
 
@@ -76,3 +78,4 @@ int main() {
 
     return 0;
 }
+*/

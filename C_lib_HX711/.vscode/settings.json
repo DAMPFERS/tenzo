@@ -59,6 +59,7 @@
   "files.associations": {
     "hx711_rvv_asm.h": "c",
     "stdio.h": "c",
-    "unistd.h": "c"
+    "unistd.h": "c",
+    "stdint.h": "c"
   }
 }

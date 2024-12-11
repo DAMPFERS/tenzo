@@ -35,5 +35,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=['C:\\PROGRAMS\\iii\\icon_not_calibration.ico'],
+    icon=['C:\\PROGRAMS\\tenzo\\MACHINE_DISTRUCTION\\icon.ico'],
 )
