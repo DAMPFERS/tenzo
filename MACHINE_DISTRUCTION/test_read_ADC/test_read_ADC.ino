@@ -93,7 +93,7 @@ int main(void)
 
   PORTD &= ~(1 << SCK);
   while (1) {
-    uart_println(123, 10);
+    uart_println(readLoadCell(DT, SCK), 10);
   }
 }
 

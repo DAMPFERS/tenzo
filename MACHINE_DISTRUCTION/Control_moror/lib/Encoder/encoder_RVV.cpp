@@ -1,5 +1,6 @@
 #include <encoder_RVV.h>
 #include <avr/interrupt.h>
+#include <util/delay.h>
 
 volatile unsigned char encoder_state = 0;
 
@@ -62,5 +63,11 @@ void encoderInit(unsigned char left_pin, unsigned char right_pin){
 }
 
 unsigned char buttonReading(unsigned char button_pin){
-    return (PIND & (1 << PD2)) == 0;
+    if ((PIND & (1 << PD2)) == 0){
+        _delay_ms(10);
+        return 1;
+    }
+    else
+        return 0;
+        
 }

@@ -1,0 +1,17 @@
+{
+	"folders": [
+		{
+			"path": "../../../Microcontrollers/risc-v/CH32V003F4P6/Project"
+		},
+		{
+			"name": "Control_moror",
+			"path": "."
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"debug.h": "c",
+			"ch32v00x.h": "c"
+		}
+	}
+}
