@@ -72,7 +72,7 @@ def update_plot(frame):
 
 def main():
     init()  # Инициализация colorama
-    mas_k = (700 / 2353524.125, 4000 /2759070.524 , 8000 / 2645214.148)
+    mas_k = (700 / 2353524.125, 4000 /2759070.524 , 8000 / 2645214.148, 40000 / 5374636)
     global ser  # Глобальная переменная для последовательного порта
     global data  # Глобальная переменная для данных
     global line_plot  # Глобальная переменная для линии графика
@@ -86,8 +86,9 @@ def main():
     print("1. 100kG")
     print("2. 500kG")
     print("3. 1000kG")
+    print("4. 4700kG")
     k = input('''Number: ''')
-    if (k == '1') or (k == '2') or (k == '3'):
+    if (k == '1') or (k == '2') or (k == '3') or (k == '4'):
         res = mas_k[int(k) - 1]
     else:
         print("Error_Sensor_Selection")
