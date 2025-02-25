@@ -3,45 +3,55 @@
 #include <encoder_RVV.h>
 #include <motor_control_RVV.h>
 #include <gui.h>
+#include <serial.h>
 
+
+void unpacking(unsigned char pack);
+
+
+/* переменные для хранения состояния нажатия кнопки (защита от множественных срабатываний кнопок) */
+unsigned char old_button_state = 0x00; 
+unsigned char new_button_state = 0x00;
+
+double delta_angle = STEP_ANGLE * 50;   // шаг угла поворота (целое количество поворотов умножить на минимальный угол поворота (угол шага)) 
+
+unsigned char state_flag = STATE_SELECT;  // флаг состояния выбора меню
+unsigned char work_flag = 0;              // флаг режима работы
+
+
+signed char index_rotation = index_velocity;   // индекс скорости поворота (может быть отрицательным (показывает направление вращения)), из него пересчитывается индекс для масива допустимых скоростей (motor.c)
+
+double angle_old = 0.0;  // старое значение угла поворота
+double angle_new = 0.0;  // новое значение угла поворота
+
+unsigned char position_select = ANGLE;   // хранит положение ползунка выбора (для отрисовки)
+
+float speed_old = 0.0;   // старое значение скорости вращения
+float speed_new = 0.0;   // новое значение скорости вращения
+
+unsigned char end_positinon_NOW;
+unsigned char end_positinon_NEW;
 
 
 int main(void) { 
   
-  double delta_angle = STEP_ANGLE * 50;   // шаг угла поворота (целое количество поворотов умножить на минимальный угол поворота (угол шага)) 
-
-  unsigned char state_flag = STATE_SELECT;  // флаг состояния выбора меню
-  unsigned char work_flag = 0;              // флаг режима работы
-
+  
   WRITE_MENU();
 
-  unsigned char end_positinon_NOW = write_NOW(POSITION_NOW, PAGE_NOW);
-  unsigned char end_positinon_NEW = write_NEW(POSITION_NEW, PAGE_NEW);
+  end_positinon_NOW = write_NOW(POSITION_NOW, PAGE_NOW);
+  end_positinon_NEW = write_NEW(POSITION_NEW, PAGE_NEW);
 
   /* заполнение нулевым значением */
   write_number(0.0, end_positinon_NOW, PAGE_NOW);  
   write_number(0.0, end_positinon_NEW, PAGE_NEW);
   
-  unsigned char position_select = ANGLE;   // хранит положение ползунка выбора (для отрисовки)
   write_selection(position_select);
-  
-  /* переменные для хранения состояния нажатия кнопки (защита от множественных срабатываний кнопок) */
-  unsigned char old_button_state = 0x00; 
-  unsigned char new_button_state = 0x00;
-  
-
-  signed char index_rotation = index_velocity;   // индекс скорости поворота (может быть отрицательным (показывает направление вращения)), из него пересчитывается индекс для масива допустимых скоростей (motor.c)
-
-  double angle_old = 0.0;  // старое значение угла поворота
-  double angle_new = 0.0;  // новое значение угла поворота
-
-  float speed_old = 0.0;   // старое значение скорости вращения
-  float speed_new = 0.0;   // новое значение скорости вращения
-
 
   motorInit(PB0,PB1,PB2,PB3);   // инициализация пинов для работы с мотором
   encoderInit(LEFT_ENCODER_PIN, RIGHT_ENCODER_PIN); // инициализация пинов для работы с энкодером
+  UART_Init(9600);
   
+  unsigned char received_char;
 
   while (1) {
     
@@ -156,7 +166,10 @@ int main(void) {
     
      
     /*___________ обработка нажатия кнопки___________________________ */
-    new_button_state = buttonReading(BUTTON_PIN);            // считывание нового состояния кнопки 
+    if (!USART_Read(&received_char))
+      new_button_state = buttonReading(BUTTON_PIN);            // считывание нового состояния кнопки 
+    else unpacking(received_char);
+
     if ((new_button_state == 1) && (old_button_state == 0)){ // если происходит смена состояния с 1 в 0 (короткое нажатие)
       
       if (state_flag == STATE_SELECT){    // если нажатие кнопки произошло в режиме STATE_SELECT (выбора) 
@@ -196,10 +209,11 @@ int main(void) {
             setSpeed();
             run_flag = 1;
             speed_old = speed_new;
+            write_numberClear(end_positinon_NOW, PAGE_NOW);
+            write_number(speed_new, end_positinon_NOW, PAGE_NOW);
             break;
 
           case WORK_OSCIL:
-
             oscil_flag = 1;
             break;
           }
@@ -243,3 +257,59 @@ int main(void) {
   }
 
 }
+
+
+
+void unpacking(unsigned char pack){
+
+  if (pack & (1 << 7)){ // START
+
+    unsigned char command = (pack >> 5) & 0b11;
+    new_button_state = 1;
+    state_flag = STATE_SELECT;
+    position_select = START;
+
+    switch (command)
+    {
+    case 0b00: // angle
+      write_FOOTNOTE_Clear();
+      write_FOOTNOTE(ANGLE);
+      work_flag = WORK_ANGLE;
+      angle_new = (pack & 0x1f) * STEP_ANGLE * 114;  // установка нового угла
+      break;
+
+    case 0b01: // rotate
+      write_FOOTNOTE_Clear();
+      write_FOOTNOTE(ROTATION);
+      work_flag = WORK_SPEED;
+      flag_start_timer_motor = UP;
+      speed_new = velocity_value_settings[pack & 0x1f];
+      index_velocity = pack & 0x1f;
+      break;
+
+    case 0b10: // -rotate
+      write_FOOTNOTE_Clear();
+      write_FOOTNOTE(ROTATION);
+      work_flag = WORK_SPEED;
+      flag_start_timer_motor = DOWN;
+      speed_new = -velocity_value_settings[pack & 0x1f];
+      index_velocity = pack & 0x1f;
+      break;
+
+    case 0b11: // oscillation
+      write_FOOTNOTE_Clear();
+      write_FOOTNOTE(OSCILATION);
+      work_flag = WORK_OSCIL;
+      oscil_angle = (pack & 0x1f) * STEP_ANGLE * 114; 
+      break;
+    }
+  }
+  else{ // STOP
+    new_button_state = 1;
+    state_flag = STATE_SELECT;
+    position_select = STOP;
+  }
+
+  return;
+}
+
